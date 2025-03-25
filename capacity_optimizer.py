@@ -1,9 +1,14 @@
 import streamlit as st
 import numpy as np
+import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 
-# 解決中文亂碼
-plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
+# 載入本地字體
+font_path = 'fonts/NotoSansTC-Regular.ttf'
+font_prop = fm.FontProperties(fname=font_path)
+
+# 設定字體以正常顯示中文
+plt.rcParams['font.family'] = font_prop.get_name()
 plt.rcParams['axes.unicode_minus'] = False
 
 # 費率設定
