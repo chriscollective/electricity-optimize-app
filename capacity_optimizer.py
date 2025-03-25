@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # 解決中文亂碼
-plt.rcParams['font.sans-serif'] = ['Noto Sans CJK TC']
+plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 
 # 費率設定
