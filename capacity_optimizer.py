@@ -2,12 +2,17 @@ import streamlit as st
 import numpy as np
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
+import os
 
-# 載入本地字體
-font_path = 'fonts/NotoSansTC-Regular.ttf'
+# 明確取得字體檔案的絕對路徑
+current_dir = os.path.dirname(os.path.abspath(__file__))
+font_path = os.path.join(current_dir, 'fonts', 'NotoSansTC-Regular.ttf')
+
+# 正式將字體加入Matplotlib字體管理器
+fm.fontManager.addfont(font_path)
+
+# 取得字體名稱並設定給 Matplotlib 使用
 font_prop = fm.FontProperties(fname=font_path)
-
-# 設定字體以正常顯示中文
 plt.rcParams['font.family'] = font_prop.get_name()
 plt.rcParams['axes.unicode_minus'] = False
 
