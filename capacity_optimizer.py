@@ -7,6 +7,8 @@ import os
 # 設定預設 sidebar 為展開 & 擴寬 sidebar
 st.set_page_config(initial_sidebar_state='expanded')
 
+
+
 st.markdown(
     """
     <style>
@@ -20,6 +22,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
+# 加入Google Analytics追蹤碼
+st.markdown("""
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MFRF3RTP11"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MFRF3RTP11');
+</script>
+""", unsafe_allow_html=True)
+
 # 明確取得字體檔案的絕對路徑
 current_dir = os.path.dirname(os.path.abspath(__file__))
 font_path = os.path.join(current_dir, 'fonts', 'NotoSansTC-Regular.ttf')
@@ -32,11 +47,8 @@ font_prop = fm.FontProperties(fname=font_path)
 plt.rcParams['font.family'] = font_prop.get_name()
 plt.rcParams['axes.unicode_minus'] = False
 
-# 加入Google Analytics追蹤碼
-with open("analytics.html", "r", encoding='utf-8') as f:
-    analytics_code = f.read()
 
-st.components.v1.html(analytics_code, height=0, width=0)
+
 
 # 費率設定
 BASIC_FEE_NON_SUMMER = 173.2
