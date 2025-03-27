@@ -3,21 +3,46 @@ import numpy as np
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import os
+import json
+import warnings
+from datetime import date
+
+
+# 關閉不必要的警告
+warnings.filterwarnings("ignore")
+
+# 自訂簡易追蹤系統：每日總訪問數儲存至 local_stats.json
+stats_file = ".local_stats.json"
+if not os.path.exists(stats_file):
+    with open(stats_file, "w", encoding="utf-8") as f:
+        json.dump({"total": 0, "daily": {}}, f)
+
+try:
+    with open(stats_file, "r", encoding="utf-8") as f:
+        stats = json.load(f)
+except:
+    stats = {"total": 0, "daily": {}}
+
+today_str = date.today().isoformat()
+
+# 用 session_state 限制重複計算
+if "counted" not in st.session_state:
+    stats["total"] += 1
+    stats["daily"][today_str] = stats["daily"].get(today_str, 0) + 1
+    st.session_state.counted = True
+
+    # 儲存更新後的統計
+    with open(stats_file, "w", encoding="utf-8") as f:
+        json.dump(stats, f, ensure_ascii=False, indent=2)
+
+
+
+
+
+
+
 # 設定預設 sidebar 為展開 & 擴寬 sidebar
 st.set_page_config(initial_sidebar_state='expanded')
-
-# 加入Google Analytics追蹤碼
-st.markdown("""
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-MFRF3RTP11"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-MFRF3RTP11');
-</script>
-""", unsafe_allow_html=True)
-
 
 
 
@@ -71,8 +96,8 @@ def calculate_annual_fee(capacity, monthly_demands):
                 fee = capacity * basic_fee_rate + excess * basic_fee_rate * 2
             else:
                 fee = (capacity * basic_fee_rate +
-                       allowed_10_percent * basic_fee_rate * 2 +
-                       (excess - allowed_10_percent) * basic_fee_rate * 3)
+                    allowed_10_percent * basic_fee_rate * 2 +
+                    (excess - allowed_10_percent) * basic_fee_rate * 3)
         total_fee += fee
     return total_fee
 
@@ -135,6 +160,15 @@ st.sidebar.markdown("### 📬 聯繫與反饋")
 st.sidebar.write("如果有任何網站相關的問題，歡迎寄信到以下信箱聯繫站主：")
 st.sidebar.code("justakiss918@gmail.com")
 st.sidebar.write("網站最新更新日期:2025/03/27")
+st.sidebar.markdown("---")
+
+# 顯示瀏覽統計資訊
+
+st.sidebar.markdown("### 📈 瀏覽人數統計")
+st.sidebar.write(f"🔢 今日瀏覽次數：{stats['daily'][today_str]}")
+st.sidebar.write(f"📊 總瀏覽次數：{stats['total']}")
+st.sidebar.markdown("---")
+
 
 # 使用者輸入
 current_capacity = st.number_input("目前契約容量（千瓦）(經常(尖峰)契約)", min_value=1, value=25)
