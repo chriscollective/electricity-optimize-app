@@ -119,6 +119,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 📬 聯繫與反饋")
 st.sidebar.write("如果有任何網站相關的問題，歡迎寄信到以下信箱聯繫站主：")
 st.sidebar.code("justakiss918@gmail.com")
+st.sidebar.write("網站最新更新日期:2025/03/27")
 
 # 使用者輸入
 current_capacity = st.number_input("目前契約容量（千瓦）(經常(尖峰)契約)", min_value=1, value=25)
