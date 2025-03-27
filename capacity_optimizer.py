@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import os
+# 設定預設 sidebar 為展開 & 擴寬 sidebar
+st.set_page_config(initial_sidebar_state='expanded')
 
 # 加入Google Analytics追蹤碼
 st.markdown("""
@@ -16,8 +18,7 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
-# 設定預設 sidebar 為展開 & 擴寬 sidebar
-st.set_page_config(initial_sidebar_state='expanded')
+
 
 
 
