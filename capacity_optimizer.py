@@ -4,6 +4,18 @@ import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import os
 
+# 加入Google Analytics追蹤碼
+st.markdown("""
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MFRF3RTP11"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MFRF3RTP11');
+</script>
+""", unsafe_allow_html=True)
+
 # 設定預設 sidebar 為展開 & 擴寬 sidebar
 st.set_page_config(initial_sidebar_state='expanded')
 
@@ -23,17 +35,7 @@ st.markdown(
 )
 
 
-# 加入Google Analytics追蹤碼
-st.markdown("""
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-MFRF3RTP11"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-MFRF3RTP11');
-</script>
-""", unsafe_allow_html=True)
+
 
 # 明確取得字體檔案的絕對路徑
 current_dir = os.path.dirname(os.path.abspath(__file__))
