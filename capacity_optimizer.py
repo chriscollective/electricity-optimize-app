@@ -63,12 +63,17 @@ def record_to_google_sheet(today_str, today_count, total_count):
 # ✅ 初始化統計資料
 today_str, today_count, total_count = load_google_sheet_stats()
 
-# ✅ 若尚未統計過，則 +1 並更新 Google Sheet
-if "counted" not in st.session_state:
-    today_count += 1
-    total_count += 1
-    st.session_state.counted = True
-    record_to_google_sheet(today_str, today_count, total_count)
+# # ✅ 若尚未統計過，則 +1 並更新 Google Sheet
+# if "counted" not in st.session_state:
+#     today_count += 1
+#     total_count += 1
+#     st.session_state.counted = True
+#     record_to_google_sheet(today_str, today_count, total_count)
+
+# 測試模式：每次重新整理都 +1
+today_count += 1
+total_count += 1
+record_to_google_sheet(today_str, today_count, total_count)
 
 # ✅ 統計資料寫入變數供後續介面使用
 stats = {
