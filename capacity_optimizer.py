@@ -14,76 +14,72 @@ from datetime import date
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# 定義一個函式：將今日瀏覽次數與總瀏覽次數寫入 Google Sheets
-def record_to_google_sheet(today_count, total_count):
+# ✅ 從 Google Sheet 載入今日與總次數統計
+def load_google_sheet_stats():
     try:
-        import gspread
-        from oauth2client.service_account import ServiceAccountCredentials
-        from datetime import date
-
-        # Step 1：定義授權範圍
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-
-        # Step 2：使用 secrets.toml 內的金鑰內容
         creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"], scope)
-
-        # Step 3：登入 Google Sheets 並開啟指定的表單
         client = gspread.authorize(creds)
         sheet = client.open_by_key("1iD0iKKg8yDRZ55MjzbTMaZNBbc7EmugEp-4_pCzmeeE").sheet1
 
-        # Step 4：取得今天日期
         today = date.today().isoformat()
+        records = sheet.get_all_records()
 
-        # Step 5：檢查是否已存在今天的紀錄
+        today_count = 0
+        total_count = 0
+
+        if records:
+            for row in records:
+                if str(row.get("日期", "")) == today:
+                    today_count = int(row.get("今日次數", 0))
+                total_count = int(row.get("總次數", total_count))
+
+        return today_count, total_count
+    except Exception as e:
+        st.warning(f"⚠️ 無法從 Google Sheet 讀取初始值：{e}")
+        return 0, 0
+
+# ✅ 將今日次數與總次數寫入 Google Sheets
+
+def record_to_google_sheet(today_count, total_count):
+    try:
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"], scope)
+        client = gspread.authorize(creds)
+        sheet = client.open_by_key("1iD0iKKg8yDRZ55MjzbTMaZNBbc7EmugEp-4_pCzmeeE").sheet1
+
+        today = date.today().isoformat()
         records = sheet.get_all_records()
         found = False
         for i, row in enumerate(records):
             if str(row.get("日期", "")) == today:
-                sheet.update(f"A{i+2}:C{i+2}", [[today, today_count, total_count]])  # 更新該行
+                sheet.update(f"A{i+2}:C{i+2}", [[today, today_count, total_count]])
                 found = True
                 break
 
         if not found:
-            sheet.append_row([today, today_count, total_count])  # 沒找到就新增一行
+            sheet.append_row([today, today_count, total_count])
 
     except Exception as e:
         st.warning(f"⚠️ 無法寫入 Google Sheet：{e}")
 
-
-
 # 關閉不必要的警告
 warnings.filterwarnings("ignore")
 
-# 自訂簡易追蹤系統：每日總訪問數儲存至 local_stats.json
-stats_file = ".local_stats.json"
-if not os.path.exists(stats_file):
-    with open(stats_file, "w", encoding="utf-8") as f:
-        json.dump({"total": 0, "daily": {}}, f)
-
-try:
-    with open(stats_file, "r", encoding="utf-8") as f:
-        stats = json.load(f)
-except:
-    stats = {"total": 0, "daily": {}}
-
+# ✅ 從 Google Sheet 載入今日與總瀏覽數統計
+stats = {}
 today_str = date.today().isoformat()
+today_count, total_count = load_google_sheet_stats()
 
-
-# 確保只記錄一次訪問（用 session_state 阻擋重複刷新）
 if "counted" not in st.session_state:
-    stats["total"] += 1
-    stats["daily"][today_str] = stats["daily"].get(today_str, 0) + 1
+    today_count += 1
+    total_count += 1
     st.session_state.counted = True
+    record_to_google_sheet(today_count, total_count)
 
-    # 將更新後的統計儲存回本地 JSON
-    with open(stats_file, "w", encoding="utf-8") as f:
-        json.dump(stats, f, ensure_ascii=False, indent=2)
-
-    # ➕ 呼叫寫入 Google Sheets 的函式
-    record_to_google_sheet(stats["daily"][today_str], stats["total"])
-
-
-
+# 將瀏覽數暫存到 stats 變數供後續使用（介面顯示）
+stats["daily"] = {today_str: today_count}
+stats["total"] = total_count
 
 
 
