@@ -23,8 +23,7 @@ def record_to_google_sheet(today_count, total_count):
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 
         # Step 2：使用 secrets.toml 內的金鑰內容
-        creds_dict = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT"])
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"], scope)
 
         # Step 3：用憑證登入 Google Sheets
         client = gspread.authorize(creds)
