@@ -14,6 +14,8 @@ from datetime import date
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+
+
 # ✅ 從 Google Sheet 載入今日與總次數統計
 def load_google_sheet_stats():
     try:
@@ -67,9 +69,11 @@ def record_to_google_sheet(today_count, total_count):
 warnings.filterwarnings("ignore")
 
 # ✅ 從 Google Sheet 載入今日與總瀏覽數統計
+
 stats = {}
 today_str = date.today().isoformat()
-today_count, total_count = load_google_sheet_stats()
+today_str, today_count, total_count = load_google_sheet_stats()
+
 
 if "counted" not in st.session_state:
     today_count += 1
