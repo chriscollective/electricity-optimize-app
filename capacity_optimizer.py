@@ -1,26 +1,25 @@
 import streamlit as st
-# 設定預設 sidebar 為展開 & 擴寬 sidebar
-st.set_page_config(initial_sidebar_state='expanded')
-
 import numpy as np
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import os
-import json
 import warnings
 from datetime import date
-
-# 引入 Google Sheets API 的授權套件
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+# 設定 sidebar 初始為展開
+st.set_page_config(initial_sidebar_state='expanded')
 
+# 關閉多餘警告
+warnings.filterwarnings("ignore")
 
-# ✅ 從 Google Sheet 載入今日與總次數統計
+# ✅ 連線並讀取 Google Sheets 上的統計資料
 def load_google_sheet_stats():
     try:
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"], scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(
+            st.secrets["GOOGLE_SERVICE_ACCOUNT"], scope)
         client = gspread.authorize(creds)
         sheet = client.open_by_key("1iD0iKKg8yDRZ55MjzbTMaZNBbc7EmugEp-4_pCzmeeE").sheet1
 
@@ -30,61 +29,52 @@ def load_google_sheet_stats():
         today_count = 0
         total_count = 0
 
-        if records:
-            for row in records:
-                if str(row.get("日期", "")) == today:
-                    today_count = int(row.get("今日次數", 0))
-                total_count = int(row.get("總次數", total_count))
+        for row in records:
+            if str(row.get("日期", "")) == today:
+                today_count = int(row.get("今日次數", 0))
+            total_count = max(total_count, int(row.get("總次數", 0)))
 
-        return today_count, total_count
+        return today, today_count, total_count
     except Exception as e:
         st.warning(f"⚠️ 無法從 Google Sheet 讀取初始值：{e}")
-        return 0, 0
+        return date.today().isoformat(), 0, 0
 
-# ✅ 將今日次數與總次數寫入 Google Sheets
-
-def record_to_google_sheet(today_count, total_count):
+# ✅ 將今日資料寫入 Google Sheets（若有則更新，否則新增）
+def record_to_google_sheet(today_str, today_count, total_count):
     try:
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"], scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(
+            st.secrets["GOOGLE_SERVICE_ACCOUNT"], scope)
         client = gspread.authorize(creds)
         sheet = client.open_by_key("1iD0iKKg8yDRZ55MjzbTMaZNBbc7EmugEp-4_pCzmeeE").sheet1
 
-        today = date.today().isoformat()
         records = sheet.get_all_records()
-        found = False
         for i, row in enumerate(records):
-            if str(row.get("日期", "")) == today:
-                sheet.update(f"A{i+2}:C{i+2}", [[today, today_count, total_count]])
-                found = True
-                break
+            if str(row.get("日期", "")) == today_str:
+                sheet.update(f"A{i+2}:C{i+2}", [[today_str, today_count, total_count]])
+                return
 
-        if not found:
-            sheet.append_row([today, today_count, total_count])
+        # 沒找到今天，就新增一筆
+        sheet.append_row([today_str, today_count, total_count])
 
     except Exception as e:
         st.warning(f"⚠️ 無法寫入 Google Sheet：{e}")
 
-# 關閉不必要的警告
-warnings.filterwarnings("ignore")
-
-# ✅ 從 Google Sheet 載入今日與總瀏覽數統計
-
-stats = {}
-today_str = date.today().isoformat()
+# ✅ 初始化統計資料
 today_str, today_count, total_count = load_google_sheet_stats()
 
+# ✅ 若尚未統計過，則 +1 並更新 Google Sheet
+if "counted" not in st.session_state:
+    today_count += 1
+    total_count += 1
+    st.session_state.counted = True
+    record_to_google_sheet(today_str, today_count, total_count)
 
-# if "counted" not in st.session_state:
-today_count += 1
-total_count += 1
-st.session_state.counted = True
-record_to_google_sheet(today_count, total_count)
-
-# 將瀏覽數暫存到 stats 變數供後續使用（介面顯示）
-stats["daily"] = {today_str: today_count}
-stats["total"] = total_count
-
+# ✅ 統計資料寫入變數供後續介面使用
+stats = {
+    "daily": {today_str: today_count},
+    "total": total_count
+}
 
 
 
