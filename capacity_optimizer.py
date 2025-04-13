@@ -75,11 +75,11 @@ today_str = date.today().isoformat()
 today_str, today_count, total_count = load_google_sheet_stats()
 
 
-if "counted" not in st.session_state:
-    today_count += 1
-    total_count += 1
-    st.session_state.counted = True
-    record_to_google_sheet(today_count, total_count)
+# if "counted" not in st.session_state:
+today_count += 1
+total_count += 1
+st.session_state.counted = True
+record_to_google_sheet(today_count, total_count)
 
 # 將瀏覽數暫存到 stats 變數供後續使用（介面顯示）
 stats["daily"] = {today_str: today_count}
