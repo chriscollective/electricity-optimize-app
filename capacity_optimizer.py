@@ -159,7 +159,7 @@ st.sidebar.write("舉例來說，同一時間公設區域用的電量越多(照�
 st.sidebar.markdown("---")
 
 st.sidebar.markdown("### 👤 誰適合使用本網站？")
-st.sidebar.write("這個網站適用於使用「低壓電力」方案的用戶，特別適合台灣社區或中小企業用戶。")
+st.sidebar.write("這個網站適用於使用「低壓電力」方案的用戶，特別適合台灣中小型社區。")
 st.sidebar.write(
     "拿起你收到的電費帳單，看一下用戶資訊：\n\n"
     "- **電價種類**：電力需量非營業用\n"
