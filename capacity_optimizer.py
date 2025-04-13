@@ -7,6 +7,32 @@ import json
 import warnings
 from datetime import date
 
+# 引入 Google Sheets API 的授權套件
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
+# 定義一個函式：將今日瀏覽次數與總瀏覽次數寫入 Google Sheets
+def record_to_google_sheet(today_count, total_count):
+    try:
+        # Step 1：定義授權範圍（允許讀寫 Sheets 和 Drive）
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        
+        # Step 2：使用金鑰 JSON 檔案建立授權憑證
+        creds = ServiceAccountCredentials.from_json_keyfile_name('optipower-credentials.json', scope)
+        
+        # Step 3：用憑證登入 Google Sheets
+        client = gspread.authorize(creds)
+        
+        # Step 4：開啟指定的 Google Sheet（用 Spreadsheet 的 ID）
+        sheet = client.open_by_key("1iD0iKKg8yDRZ55MjzbTMaZNBbc7EmugEp-4_pCzmeeE").sheet1
+        
+        # Step 5：準備要寫入的資料（今天日期、今日瀏覽次數、總次數）
+        today = date.today().isoformat()
+        sheet.append_row([today, today_count, total_count])  # 寫入下一列
+    except Exception as e:
+        # 如果發生錯誤，就顯示在網頁上
+        st.warning(f"⚠️ 無法寫入 Google Sheet：{e}")
+
 
 # 關閉不必要的警告
 warnings.filterwarnings("ignore")
@@ -25,16 +51,19 @@ except:
 
 today_str = date.today().isoformat()
 
-# 用 session_state 限制重複計算
+
+# 確保只記錄一次訪問（用 session_state 阻擋重複刷新）
 if "counted" not in st.session_state:
     stats["total"] += 1
     stats["daily"][today_str] = stats["daily"].get(today_str, 0) + 1
     st.session_state.counted = True
 
-    # 儲存更新後的統計
+    # 將更新後的統計儲存回本地 JSON
     with open(stats_file, "w", encoding="utf-8") as f:
         json.dump(stats, f, ensure_ascii=False, indent=2)
 
+    # ➕ 呼叫寫入 Google Sheets 的函式
+    record_to_google_sheet(stats["daily"][today_str], stats["total"])
 
 
 
@@ -102,8 +131,8 @@ def calculate_annual_fee(capacity, monthly_demands):
     return total_fee
 
 # Streamlit界面
-st.title("契約容量最佳化計算工具")
-st.subheader("(非時間電價)")
+st.title("契約容量最佳化計算工具｜快速找出最省電費方案") 
+st.subheader("(非時間電價｜低壓電力)")
 
 # 側邊欄的額外說明
 st.sidebar.header("🔖 網站說明")
@@ -114,6 +143,7 @@ st.sidebar.write("舉例來說，同一時間公設區域用的電量越多(照�
 st.sidebar.markdown("---")
 
 st.sidebar.markdown("### 👤 誰適合使用本網站？")
+st.sidebar.wirte("這個網站適用於使用「低壓電力」方案的用戶，特別適合台灣社區或中小企業用戶。")
 st.sidebar.write(
     "拿起你收到的電費帳單，看一下用戶資訊：\n\n"
     "- **電價種類**：電力需量非營業用\n"
