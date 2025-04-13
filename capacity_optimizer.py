@@ -17,7 +17,9 @@ from oauth2client.service_account import ServiceAccountCredentials
 # 定義一個函式：將今日瀏覽次數與總瀏覽次數寫入 Google Sheets
 def record_to_google_sheet(today_count, total_count):
     try:
-        
+        import gspread
+        from oauth2client.service_account import ServiceAccountCredentials
+        from datetime import date
 
         # Step 1：定義授權範圍
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -25,17 +27,28 @@ def record_to_google_sheet(today_count, total_count):
         # Step 2：使用 secrets.toml 內的金鑰內容
         creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"], scope)
 
-        # Step 3：用憑證登入 Google Sheets
+        # Step 3：登入 Google Sheets 並開啟指定的表單
         client = gspread.authorize(creds)
-
-        # Step 4：開啟指定的 Google Sheet（用 Spreadsheet 的 ID）
         sheet = client.open_by_key("1iD0iKKg8yDRZ55MjzbTMaZNBbc7EmugEp-4_pCzmeeE").sheet1
 
-        # Step 5：準備要寫入的資料（今天日期、今日瀏覽次數、總次數）
+        # Step 4：取得今天日期
         today = date.today().isoformat()
-        sheet.append_row([today, today_count, total_count])  # 寫入下一列
+
+        # Step 5：檢查是否已存在今天的紀錄
+        records = sheet.get_all_records()
+        found = False
+        for i, row in enumerate(records):
+            if str(row.get("日期", "")) == today:
+                sheet.update(f"A{i+2}:C{i+2}", [[today, today_count, total_count]])  # 更新該行
+                found = True
+                break
+
+        if not found:
+            sheet.append_row([today, today_count, total_count])  # 沒找到就新增一行
+
     except Exception as e:
         st.warning(f"⚠️ 無法寫入 Google Sheet：{e}")
+
 
 
 # 關閉不必要的警告
