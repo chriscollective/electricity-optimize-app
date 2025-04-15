@@ -29,15 +29,21 @@ def load_google_sheet_stats():
         today_count = 0
         total_count = 0
 
+        st.write("📋 載入紀錄：", records)
+
         for row in records:
-            if str(row.get("日期", "")) == today:
-                today_count = int(row.get("今日次數", 0))
-            total_count = max(total_count, int(row.get("總次數", 0)))
+            row_date = str(row.get("日期", "")).strip()
+            # 🚨 新增這行看看值有沒有成功讀到
+            st.write(f"➡️ 日期：{row_date} | 今日瀏覽次數：{row.get('今日瀏覽次數')} | 累積瀏覽次數：{row.get('累積瀏覽次數')}")
+            if row_date == today:
+                today_count = int(row.get("今日瀏覽次數", 0))
+            total_count = max(total_count, int(row.get("累積瀏覽次數", 0)))
 
         return today, today_count, total_count
     except Exception as e:
         st.warning(f"⚠️ 無法從 Google Sheet 讀取初始值：{e}")
         return date.today().isoformat(), 0, 0
+
 
 # ✅ 將今日資料寫入 Google Sheets（若有則更新，否則新增）
 def record_to_google_sheet(today_str, today_count, total_count):
