@@ -52,7 +52,6 @@ def load_google_sheet_stats():
         st.warning(f"⚠️ 無法從 Google Sheet 讀取初始值：{e}")
         return date.today().isoformat(), 0, 0
 
-# ✅ 將今日資料寫入 Google Sheets（若有則更新，否則新增）
 def record_to_google_sheet(today_str, today_count, total_count):
     try:
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -62,25 +61,21 @@ def record_to_google_sheet(today_str, today_count, total_count):
         sheet = client.open_by_key("1iD0iKKg8yDRZ55MjzbTMaZNBbc7EmugEp-4_pCzmeeE").sheet1
 
         records = sheet.get_all_records()
-        st.write("📋 Google Sheet 現有資料：")
-        st.write(records)
 
         updated = False
         for i, row in enumerate(records):
             row_date = str(row.get("日期", "")).strip()
             if row_date == today_str:
-                st.success(f"✅ 找到今日資料在第 {i+2} 列，準備更新！")
                 sheet.update(f"A{i+2}:C{i+2}", [[today_str, today_count, total_count]])
                 updated = True
                 break
 
         if not updated:
-            st.warning("⚠️ 沒有找到今天的資料，將新增一列")
             sheet.append_row([today_str, today_count, total_count])
-            st.success("✅ 已新增一列今日資料")
 
     except Exception as e:
         st.error(f"❌ 寫入 Google Sheet 發生錯誤：{e}")
+
 
 
 # ✅ 初始化統計資料
