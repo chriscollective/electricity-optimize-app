@@ -15,6 +15,8 @@ st.set_page_config(initial_sidebar_state='expanded')
 warnings.filterwarnings("ignore")
 
 # ✅ 連線並讀取 Google Sheets 上的統計資料
+from datetime import datetime, timedelta
+
 def load_google_sheet_stats():
     try:
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -23,24 +25,28 @@ def load_google_sheet_stats():
         client = gspread.authorize(creds)
         sheet = client.open_by_key("1iD0iKKg8yDRZ55MjzbTMaZNBbc7EmugEp-4_pCzmeeE").sheet1
 
-        today = date.today().isoformat()
         records = sheet.get_all_records()
 
+        today = date.today().isoformat()
+        yesterday = (date.today() - timedelta(days=1)).isoformat()
+
         today_count = 0
-        total_count = 0
+        yesterday_total = 0
 
         for row in records:
             row_date = str(row.get("日期", "")).strip()
             try:
                 today_value = int(row.get("今日瀏覽次數", 0))
+                total_value = int(row.get("累積瀏覽次數", 0))
             except:
-                today_value = 0
+                today_value, total_value = 0, 0
 
             if row_date == today:
                 today_count = today_value
+            elif row_date == yesterday:
+                yesterday_total = total_value
 
-            total_count += today_value  # ✅ 累積每一天的今日次數
-
+        total_count = today_count + yesterday_total
         return today, today_count, total_count
     except Exception as e:
         st.warning(f"⚠️ 無法從 Google Sheet 讀取初始值：{e}")
