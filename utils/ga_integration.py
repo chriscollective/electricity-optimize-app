@@ -1,7 +1,23 @@
 # utils/analytics.py (檔名隨意)
+import os
 import streamlit as st
+from dotenv import load_dotenv
 
-def inject_google_analytics(ga_id: str = "G-MFRF3RTP11"):
+# 本機：讀取 .env（雲端沒這檔也不會報錯）
+load_dotenv()
+
+def get_ga_id() -> str | None:
+    # 讀取優先序：Secrets > 環境變數 > None
+    return (
+        st.secrets.get("GA_MEASUREMENT_ID")
+        or os.getenv("GA_MEASUREMENT_ID")
+    )
+
+def inject_google_analytics(ga_id: str | None = None):
+    ga_id = ga_id or get_ga_id()
+    if not ga_id:
+        # 沒設定就直接返回，不注入
+        return
     """
     直接啟用 GA4（不彈同意）。避免觸碰 window.parent，避免 debug_mode 被過濾。
     只注入「一份」gtag（很重要！）
