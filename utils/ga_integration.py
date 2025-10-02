@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 # 本機：讀取 .env（雲端沒這檔也不會報錯）
 load_dotenv()
 
+_GA_INJECTED = False
+
 def get_ga_id() -> str | None:
     # 讀取優先序：Secrets > 環境變數 > None
     return (

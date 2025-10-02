@@ -6,10 +6,11 @@ import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import os
 import warnings
+from dotenv import load_dotenv
 
 import streamlit.components.v1 as components
 
-
+load_dotenv()
 
 # 匯入自定義模組
 from utils.calculator import (
@@ -55,6 +56,13 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+def get_ga_id() -> str | None:
+    # 讀取優先序：Secrets > 環境變數 > None
+    return (
+        st.secrets.get("GA_MEASUREMENT_ID")
+        or os.getenv("GA_MEASUREMENT_ID")
+    )
 
 
 def setup_matplotlib_font():
