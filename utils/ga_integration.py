@@ -7,53 +7,48 @@ import streamlit.components.v1 as components
 
 def inject_google_analytics(ga_id: str = "G-MFRF3RTP11"):
     """
-    直接啟用 GA4（不彈出同意），支援 Streamlit iframe 場景。
-    - 避免重複注入：window.__gaInjected 旗標
-    - 正確回報網址：優先取父視窗的 URL（Streamlit 會把 component 放在 iframe）
-    - 匿名化 IP：anonymize_ip=True
+    直接啟用 GA4（不彈同意），避開跨網域存取 parent 的問題。
+    - page_location 優先用 document.referrer（在 iframe 內會是父頁網址）
+    - 保留 anonymize_ip，避免隱私告警
+    - 不使用 debug_mode，避免被 Developer traffic 過濾
     """
     ga_code = f"""
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
     <script>
-      if (!window.__gaInjected) {{
-        window.__gaInjected = true;
+      (function() {{
+        // 安全取得實際頁面位置（不觸碰 window.parent）
+        var page_location = document.referrer && document.referrer !== "" 
+                            ? document.referrer 
+                            : window.location.href;
 
-        // 優先使用父視窗 URL（Streamlit component 常在 iframe）
-        const loc = (window.parent && window.parent.location) ? window.parent.location : window.location;
-        const page_location = loc.href;
-        const page_path = loc.pathname + loc.search + loc.hash;
+        var page_path;
+        try {{
+          // 從 referrer 拆出 path（若 referrer 不可解析就退回當前頁）
+          var url = new URL(page_location);
+          page_path = url.pathname + url.search + url.hash;
+        }} catch (e) {{
+          page_path = window.location.pathname + window.location.search + window.location.hash;
+        }}
 
         window.dataLayer = window.dataLayer || [];
         function gtag(){{ dataLayer.push(arguments); }}
 
         gtag('js', new Date());
 
-        // 初始化你的 GA（不使用 debug_mode，以免被 Developer traffic 過濾）
+        // 初始化你的 GA
         gtag('config', '{ga_id}', {{
           anonymize_ip: true,
           page_location: page_location,
           page_path: page_path
         }});
 
-        // 顯式送出一筆 page_view 事件
+        // 顯式送出一筆 page_view
         gtag('event', 'page_view', {{
           page_location: page_location,
           page_path: page_path
         }});
-
-        // 記錄到 console，方便你確認當前使用的 tid
-        console.log('[GA injected]', '{ga_id}', page_location);
-
-        // 取 client_id 也印出來（可驗證 gtag 正常）
-        try {{
-          gtag('get', '{ga_id}', 'client_id', function(cid) {{
-            console.log('[GA client_id]', cid);
-          }});
-        }} catch (e) {{
-          console.warn('gtag get client_id failed', e);
-        }}
-      }}
+      }})();
     </script>
     """
     # 注入到頁面 (高度設為 0,不佔空間)

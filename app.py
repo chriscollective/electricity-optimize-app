@@ -240,12 +240,15 @@ def render_footer():
 
 def main():
     """主程式"""
+
+    # 注入 GA
+    inject_google_analytics()
+
     # 設定字體
     setup_matplotlib_font()
 
     
-    # 注入 GA
-    inject_google_analytics()
+ 
 
 
     # 渲染側邊欄
