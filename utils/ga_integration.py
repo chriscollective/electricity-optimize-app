@@ -9,15 +9,20 @@ try:
 except Exception:
     pass
 
-# 避免 Streamlit rerun 時重複注入
-_GA_INJECTED = False
-
-
 def get_ga_id() -> str | None:
     """
     優先讀取 Streamlit Secrets，其次讀取環境變數/本機 .env
     """
-    return st.secrets.get("GA_MEASUREMENT_ID") or os.getenv("GA_MEASUREMENT_ID")
+    try:
+        # 嘗試從 Streamlit secrets 讀取
+        ga_id = st.secrets.get("GA_MEASUREMENT_ID")
+        if ga_id:
+            return ga_id
+    except (KeyError, AttributeError):
+        pass
+
+    # 從環境變數讀取
+    return os.getenv("GA_MEASUREMENT_ID")
 
 
 def inject_google_analytics(ga_id: str | None = None, *, show_debug: bool = False) -> None:
@@ -26,11 +31,11 @@ def inject_google_analytics(ga_id: str | None = None, *, show_debug: bool = Fals
     - 避免 parent 跨域：以 document.referrer / window.location 取得 URL
     - 加上匿名化 IP
     - 先 'config' 再顯式送一筆 'page_view'
-    - 以 _GA_INJECTED + window.__gaInjected 雙重旗標避免重複注入
+    - 使用 session_state 避免重複注入
     - show_debug=True 時會使用 Streamlit 原生元件顯示訊息
     """
-    global _GA_INJECTED
-    if _GA_INJECTED:
+    # 使用 session_state 避免重複注入
+    if "ga_injected" in st.session_state and st.session_state.ga_injected:
         return
 
     ga_id = ga_id or get_ga_id()
@@ -90,5 +95,7 @@ def inject_google_analytics(ga_id: str | None = None, *, show_debug: bool = Fals
     """
 
     # 高度設為 0，不佔用頁面空間
-    st.components.v1.html(ga_code, height=60)
-    _GA_INJECTED = True
+    st.components.v1.html(ga_code, height=0)
+
+    # 標記已注入
+    st.session_state.ga_injected = True
