@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 import streamlit.components.v1 as components
 
 load_dotenv()
-
+from utils.ga_mp import send_page_view
 # 匯入自定義模組
 from utils.calculator import (
     calculate_annual_fee,
@@ -250,8 +250,8 @@ def main():
     """主程式"""
 
     # 注入 GA
-    inject_google_analytics("G-MFRF3RTP11",show_debug=True)
-
+    #inject_google_analytics("G-MFRF3RTP11",show_debug=True)
+    ok = send_page_view()
     # 設定字體
     setup_matplotlib_font()
 
