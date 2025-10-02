@@ -250,7 +250,7 @@ def main():
     """主程式"""
 
     # 注入 GA
-    inject_google_analytics()
+    inject_google_analytics(show_debug=True)
 
     # 設定字體
     setup_matplotlib_font()
