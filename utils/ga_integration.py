@@ -90,5 +90,5 @@ def inject_google_analytics(ga_id: str | None = None, *, show_debug: bool = Fals
     """
 
     # 高度設為 0，不佔用頁面空間
-    st.components.v1.html(ga_code, height=0)
+    st.components.v1.html(ga_code, height=60)
     _GA_INJECTED = True
