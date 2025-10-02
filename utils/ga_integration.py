@@ -19,22 +19,40 @@ def inject_google_analytics(ga_id: str = "G-MFRF3RTP11"):
       if (!window.__gaInjected) {{
         window.__gaInjected = true;
 
-        // 取得實際頁面位置（優先父視窗）
+        // 優先使用父視窗 URL（Streamlit component 常在 iframe）
         const loc = (window.parent && window.parent.location) ? window.parent.location : window.location;
         const page_location = loc.href;
         const page_path = loc.pathname + loc.search + loc.hash;
 
         window.dataLayer = window.dataLayer || [];
         function gtag(){{ dataLayer.push(arguments); }}
+
         gtag('js', new Date());
 
-        // 直接啟用追蹤（不做 consent）
+        // 初始化你的 GA（不使用 debug_mode，以免被 Developer traffic 過濾）
         gtag('config', '{ga_id}', {{
           anonymize_ip: true,
-          debug_mode: true,
           page_location: page_location,
           page_path: page_path
         }});
+
+        // 顯式送出一筆 page_view 事件
+        gtag('event', 'page_view', {{
+          page_location: page_location,
+          page_path: page_path
+        }});
+
+        // 記錄到 console，方便你確認當前使用的 tid
+        console.log('[GA injected]', '{ga_id}', page_location);
+
+        // 取 client_id 也印出來（可驗證 gtag 正常）
+        try {{
+          gtag('get', '{ga_id}', 'client_id', function(cid) {{
+            console.log('[GA client_id]', cid);
+          }});
+        }} catch (e) {{
+          console.warn('gtag get client_id failed', e);
+        }}
       }}
     </script>
     """
