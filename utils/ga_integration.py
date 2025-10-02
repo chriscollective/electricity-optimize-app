@@ -27,7 +27,7 @@ def inject_google_analytics(ga_id: str | None = None, *, show_debug: bool = Fals
     - 加上匿名化 IP
     - 先 'config' 再顯式送一筆 'page_view'
     - 以 _GA_INJECTED + window.__gaInjected 雙重旗標避免重複注入
-    - show_debug=True 時會顯示頂部黃條 & console 標記，方便驗證
+    - show_debug=True 時會使用 Streamlit 原生元件顯示訊息
     """
     global _GA_INJECTED
     if _GA_INJECTED:
@@ -36,18 +36,16 @@ def inject_google_analytics(ga_id: str | None = None, *, show_debug: bool = Fals
     ga_id = ga_id or get_ga_id()
     if not ga_id:
         # 未設定 ID 則略過
+        if show_debug:
+            st.warning("⚠️ Google Analytics ID 未設定")
         return
 
-    debug_banner = f"""
-    <div id="ga-debug-banner"
-         style="font:12px/1.4 system-ui,Arial; background:#ffe08a; color:#222;
-                padding:6px 10px; border:1px solid #d4b556; border-radius:6px; width:fit-content; margin-bottom:6px;">
-      GA4 tag injected → <strong>{ga_id}</strong>
-    </div>
-    """ if show_debug else ""
+    # 使用 Streamlit 原生元件顯示 debug 訊息
+    if show_debug:
+        st.info(f"✅ Google Analytics 已啟用：{ga_id}")
 
+    # 純 JavaScript 注入，不包含 HTML 元素
     ga_code = f"""
-    {debug_banner}
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
     <script>
@@ -91,5 +89,6 @@ def inject_google_analytics(ga_id: str | None = None, *, show_debug: bool = Fals
     </script>
     """
 
-    st.components.v1.html(ga_code, height=(60 if show_debug else 0))
+    # 高度設為 0，不佔用頁面空間
+    st.components.v1.html(ga_code, height=0)
     _GA_INJECTED = True

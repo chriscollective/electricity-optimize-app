@@ -107,7 +107,7 @@ def validate_demand_vs_capacity(
 
     # 檢查需量變化是否過大
     min_demand = min(monthly_demands)
-    if max_demand > 0 and (max_demand / min_demand) > 3:
+    if max_demand > 0 and min_demand > 0 and (max_demand / min_demand) > 3:
         warnings.append(
             f"ℹ️ 最高需量 ({max_demand:.1f} kW) 與最低需量 ({min_demand:.1f} kW) "
             f"差異較大，可能是夏季與非夏季用電差異所致"
