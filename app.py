@@ -18,7 +18,7 @@ from utils.calculator import (
     find_optimal_capacity,
     get_fee_distribution
 )
-from utils.ga_integration import (inject_google_analytics, inject_cookie_banner)  # inject_ga
+from utils.ga_integration import (inject_google_analytics)  # inject_ga
 from utils.validators import (
     validate_capacity,
     validate_monthly_demands,
@@ -247,8 +247,6 @@ def main():
     # 注入 GA
     inject_google_analytics()
 
-    # 注入 Cookie 橫幅 (可選,如果需要符合 GDPR)
-    inject_cookie_banner()
 
     # 渲染側邊欄
     render_sidebar()
