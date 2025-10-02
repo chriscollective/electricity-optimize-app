@@ -62,4 +62,4 @@ def inject_google_analytics(ga_id: str | None = None):
       }})();
     </script>
     """
-    st.components.v1.html(ga_code, height=0)
+    st.components.v1.html(ga_code, height=60)
