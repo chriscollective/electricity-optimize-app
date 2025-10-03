@@ -8,9 +8,7 @@ def render_sidebar():
     """
     渲染側邊欄內容
 
-    Args:
-        today_count: 今日瀏覽次數
-        total_count: 總瀏覽次數
+
     """
     st.sidebar.header("🔖 網站說明")
 
