@@ -50,6 +50,12 @@ st.markdown(
         width: 1000px;
     }
     </style>
+        /* ✨ 新增:隱藏 form 的邊框 */
+    [data-testid="stForm"] {
+        border: 0px;
+        padding: 0px;
+    }
+    </style>
     """,
     unsafe_allow_html=True
 )
@@ -257,9 +263,9 @@ def main():
     setup_matplotlib_font()
 
     # 記錄訪客 (可選,如果需要的話)
-    # if "initialized" not in st.session_state:
-    #     log_visit()
-    #     st.session_state["initialized"] = True
+    if "initialized" not in st.session_state:
+        log_visit()
+        st.session_state["initialized"] = True
 
     # 渲染側邊欄
     render_sidebar()

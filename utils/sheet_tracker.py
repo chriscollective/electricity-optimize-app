@@ -19,23 +19,14 @@ def get_sheet():
 
 
 def log_visit():
-    """只在使用者 session 第一次訪問時記錄到 Google Sheet"""
-    # 如果已經記錄過，就直接 return
-    if st.session_state.get("logged", False):
-        return False
-
+    """新增一筆訪客紀錄"""
     sheet = get_sheet()
 
-    # 每個使用者 session 一個唯一 ID
     if "visitor_id" not in st.session_state:
         st.session_state.visitor_id = str(uuid.uuid4())
 
     today = date.today().isoformat()
     sheet.append_row([today, st.session_state.visitor_id])
-
-    # 標記已記錄，避免後續互動重複寫入
-    st.session_state["logged"] = True
-    return True
 
 
 def get_stats():
