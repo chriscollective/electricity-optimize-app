@@ -3,21 +3,19 @@
 """
 import streamlit as st
 
-# 臨時補丁：把舊 API 導到新 API
-# 不管有沒有，直接覆蓋掉
-st.experimental_get_query_params = lambda: st.query_params
 
+from utils.sheet_tracker import log_visit, get_stats
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import os
 import warnings
-import streamlit_analytics
+
 from dotenv import load_dotenv
 
 import streamlit.components.v1 as components
 
 load_dotenv()
-from utils.ga_mp import send_page_view
+
 # 匯入自定義模組
 from utils.calculator import (
     calculate_annual_fee,
@@ -25,7 +23,7 @@ from utils.calculator import (
     find_optimal_capacity,
     get_fee_distribution
 )
-from utils.ga_integration import (inject_google_analytics)  # inject_ga
+
 from utils.validators import (
     validate_capacity,
     validate_monthly_demands,
@@ -63,12 +61,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-def get_ga_id() -> str | None:
-    # 讀取優先序：Secrets > 環境變數 > None
-    return (
-        st.secrets.get("GA_MEASUREMENT_ID")
-        or os.getenv("GA_MEASUREMENT_ID")
-    )
+
 
 
 def setup_matplotlib_font():
@@ -255,14 +248,14 @@ def render_footer():
 def main():
     """主程式"""
 
-    # 注入 GA
-    #inject_google_analytics("G-MFRF3RTP11",show_debug=True)
-       # 啟動 analytics（會自動記錄訪問次數）
-    streamlit_analytics.start_tracking()
+ 
     # 設定字體
     setup_matplotlib_font()
 
-    
+    # 記錄訪客
+    log_visit()
+    today, total = get_stats()
+    st.sidebar.info(f"👀 今日訪客：{today} | 總訪客：{total}")
  
 
 
@@ -305,6 +298,5 @@ def main():
     render_footer()
 
 
-    streamlit_analytics.stop_tracking()
 if __name__ == "__main__":
     main()

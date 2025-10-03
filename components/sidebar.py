@@ -2,7 +2,7 @@
 側邊欄 UI 元件模組
 """
 import streamlit as st
-
+from utils.sheet_tracker import get_stats
 
 def render_sidebar():
     """
@@ -110,6 +110,11 @@ def render_sidebar():
 
     # 瀏覽統計
     st.sidebar.markdown("### 📈 瀏覽人數統計")
-    st.sidebar.write(f"🔢 今日瀏覽次數：OPPS")
-    st.sidebar.write(f"📊 總瀏覽次數：OOPS")
+    try:
+        today_count, total_count = get_stats()
+        st.sidebar.write(f"🔢 今日瀏覽次數：{today_count}")
+        st.sidebar.write(f"📊 總瀏覽次數：{total_count}")
+    except Exception as e:
+        st.sidebar.write("⚠️ 無法讀取人數統計")
+        st.sidebar.code(str(e))
     st.sidebar.markdown("---")
