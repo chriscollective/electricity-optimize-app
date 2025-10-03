@@ -1,17 +1,14 @@
 """
 契約容量最佳化計算工具
+✨ 使用 st.form 優化,避免不必要的重新渲染
 """
 import streamlit as st
-
-
 from utils.sheet_tracker import log_visit, get_stats
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import os
 import warnings
-
 from dotenv import load_dotenv
-
 import streamlit.components.v1 as components
 
 load_dotenv()
@@ -33,16 +30,12 @@ from utils.validators import (
 from components.sidebar import render_sidebar
 
 
-
-
 # 頁面設定
 st.set_page_config(
     page_title="契約容量最佳化計算工具",
     page_icon="⚡",
     initial_sidebar_state='expanded'
 )
-
-
 
 # 關閉多餘警告
 warnings.filterwarnings("ignore")
@@ -62,8 +55,6 @@ st.markdown(
 )
 
 
-
-
 def setup_matplotlib_font():
     """設定 Matplotlib 中文字體"""
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -78,62 +69,79 @@ def setup_matplotlib_font():
         st.warning("⚠️ 找不到中文字體檔案，圖表可能無法正確顯示中文")
 
 
-
-
 def render_input_section():
-    """渲染輸入區塊"""
+    """
+    渲染輸入區塊
+    ✨ 使用 st.form 包裝,只有提交時才重新渲染
+    """
     st.title("契約容量最佳化計算工具｜快速找出最省電費方案")
     st.subheader("(非時間電價｜低壓電力)")
 
-    # 契約容量輸入
-    current_capacity = st.number_input(
-        "目前契約容量（千瓦）(經常(尖峰)契約)",
-        min_value=1,
-        value=25,
-        help="請輸入電費帳單上的契約容量"
-    )
+    # ✨ 使用 form 包裝所有輸入元件
+    with st.form("calculation_form"):
+        # 契約容量輸入
+        current_capacity = st.number_input(
+            "目前契約容量（千瓦）(經常(尖峰)契約)",
+            min_value=1,
+            value=25,
+            help="請輸入電費帳單上的契約容量"
+        )
 
-    # 12 個月需量輸入
-    st.subheader("輸入1~12月的最高需量（千瓦）")
-    st.caption("通常在電費帳單➞最高需量(千瓦)➞經常(尖峰)需量")
+        # 12 個月需量輸入
+        st.subheader("輸入1~12月的最高需量（千瓦）")
+        st.caption("通常在電費帳單➞最高需量(千瓦)➞經常(尖峰)需量")
 
-    monthly_demands = []
-    cols = st.columns(4)
+        monthly_demands = []
+        cols = st.columns(4)
 
-    for i in range(12):
-        with cols[i % 4]:
-            default_value = max(1, int(current_capacity * 0.8))
-            demand = st.number_input(
-                f"{i+1}月",
-                min_value=1,
-                value=default_value,
-                key=f"month_{i}",
-                help=f"{i+1}月的最高需量"
-            )
-            monthly_demands.append(demand)
+        for i in range(12):
+            with cols[i % 4]:
+                default_value = max(1, int(current_capacity * 0.8))
+                demand = st.number_input(
+                    f"{i+1}月",
+                    min_value=1,
+                    value=default_value,
+                    key=f"month_{i}",
+                    help=f"{i+1}月的最高需量"
+                )
+                monthly_demands.append(demand)
 
-    # 驗證契約容量
-    is_valid_capacity, error_msg = validate_capacity(current_capacity)
-    if not is_valid_capacity:
-        st.error(f"❌ {error_msg}")
-        return None, None
+        # ✨ 提交按鈕必須在 form 內部
+        st.write("---")
+        submitted = st.form_submit_button(
+            "🔍 開始計算最佳容量",
+            type="primary",
+            use_container_width=True
+        )
 
-    # 驗證需量資料
-    is_valid_demands, error_msg = validate_monthly_demands(monthly_demands)
-    if not is_valid_demands:
-        st.error(f"❌ {error_msg}")
-        return None, None
+    # ✨ 表單提交後才進行驗證 (在 form 外部)
+    if submitted:
+        # 驗證契約容量
+        is_valid_capacity, error_msg = validate_capacity(current_capacity)
+        if not is_valid_capacity:
+            st.error(f"❌ {error_msg}")
+            return None, None, False
 
-    # 驗證需量與契約容量的合理性
-    is_valid, error_msg, warnings_list = validate_demand_vs_capacity(
-        monthly_demands, current_capacity
-    )
+        # 驗證需量資料
+        is_valid_demands, error_msg = validate_monthly_demands(monthly_demands)
+        if not is_valid_demands:
+            st.error(f"❌ {error_msg}")
+            return None, None, False
 
-    if warnings_list:
-        warning_text = format_validation_messages(warnings_list)
-        st.warning(warning_text)
+        # 驗證需量與契約容量的合理性
+        is_valid, error_msg, warnings_list = validate_demand_vs_capacity(
+            monthly_demands, current_capacity
+        )
 
-    return current_capacity, monthly_demands
+        if warnings_list:
+            warning_text = format_validation_messages(warnings_list)
+            st.warning(warning_text)
+
+        # 返回資料和提交狀態
+        return current_capacity, monthly_demands, True
+
+    # 未提交時返回 None
+    return None, None, False
 
 
 def render_current_status(current_capacity, monthly_demands):
@@ -243,39 +251,24 @@ def render_footer():
     )
 
 
-
-
 def main():
     """主程式"""
-
- 
     # 設定字體
     setup_matplotlib_font()
 
-    # 記錄訪客
-    # 初始化時只跑一次
-    #if "initialized" not in st.session_state:
-     #   log_visit()  # 這裡才真正寫 Google Sheet
-      #  st.session_state["initialized"] = True
- 
-
+    # 記錄訪客 (可選,如果需要的話)
+    # if "initialized" not in st.session_state:
+    #     log_visit()
+    #     st.session_state["initialized"] = True
 
     # 渲染側邊欄
     render_sidebar()
 
-    # 渲染輸入區塊
-    result = render_input_section()
-    if result[0] is None:
-        return
+    # ✨ 渲染輸入區塊 (使用 form,會返回提交狀態)
+    current_capacity, monthly_demands, submitted = render_input_section()
 
-    current_capacity, monthly_demands = result
-
-    # 加入計算按鈕
-    st.write("---")
-    calculate_button = st.button("🔍 開始計算最佳容量", type="primary", use_container_width=True)
-
-    # 只有按下按鈕才開始計算
-    if calculate_button:
+    # ✨ 只有當表單提交且驗證通過時才計算和顯示結果
+    if submitted and current_capacity is not None:
         # 渲染目前狀態
         current_result = render_current_status(current_capacity, monthly_demands)
         if current_result[0] is None:
@@ -292,8 +285,6 @@ def main():
 
         # 渲染圖表
         render_chart(monthly_demands, optimal_capacity, optimal_fee)
-
-
 
     # 渲染頁尾
     render_footer()
