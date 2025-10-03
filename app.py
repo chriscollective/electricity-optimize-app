@@ -49,13 +49,15 @@ st.markdown(
         max-width: 1000px;
         width: 1000px;
     }
-    </style>
-        /* ✨ 新增:隱藏 form 的邊框 */
+
+     /* ✨ 新增:隱藏 form 的邊框 */
     [data-testid="stForm"] {
         border: 0px;
         padding: 0px;
     }
     </style>
+       
+   
     """,
     unsafe_allow_html=True
 )
