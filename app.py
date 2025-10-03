@@ -6,6 +6,7 @@ import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import os
 import warnings
+import streamlit_analytics
 from dotenv import load_dotenv
 
 import streamlit.components.v1 as components
@@ -251,7 +252,8 @@ def main():
 
     # 注入 GA
     #inject_google_analytics("G-MFRF3RTP11",show_debug=True)
-    ok = send_page_view()
+       # 啟動 analytics（會自動記錄訪問次數）
+    streamlit_analytics.start_tracking()
     # 設定字體
     setup_matplotlib_font()
 
