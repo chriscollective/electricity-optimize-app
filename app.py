@@ -34,8 +34,8 @@ from components.sidebar import render_sidebar
 st.set_page_config(
     page_title="契約容量最佳化計算工具",
     page_icon="⚡",
-    initial_sidebar_state='expanded',
-    layout="wide"
+    initial_sidebar_state='expanded'
+    
 )
 
 # 關閉多餘警告
@@ -45,6 +45,11 @@ warnings.filterwarnings("ignore")
 st.markdown(
     """
     <style>
+    .block-container {
+        max-width: 1200px;   /* increase this to whatever you like */
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
     [data-testid="stSidebar"] {
         min-width: 400px;
         max-width: 1000px;
