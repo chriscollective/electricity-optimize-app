@@ -254,9 +254,9 @@ def main():
 
     # 記錄訪客
     # 初始化時只跑一次
-    if "initialized" not in st.session_state:
-        log_visit()  # 這裡才真正寫 Google Sheet
-        st.session_state["initialized"] = True
+    #if "initialized" not in st.session_state:
+     #   log_visit()  # 這裡才真正寫 Google Sheet
+      #  st.session_state["initialized"] = True
  
 
 
