@@ -299,12 +299,12 @@ def main():
         # 渲染圖表
         render_chart(monthly_demands, optimal_capacity, optimal_fee)
 
-    streamlit_analytics.stop_tracking()
+
 
     # 渲染頁尾
     render_footer()
 
 
-
+    streamlit_analytics.stop_tracking()
 if __name__ == "__main__":
     main()
