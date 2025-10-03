@@ -254,8 +254,6 @@ def main():
 
     # 記錄訪客
     log_visit()
-    today, total = get_stats()
-    st.sidebar.info(f"👀 今日訪客：{today} | 總訪客：{total}")
  
 
 
