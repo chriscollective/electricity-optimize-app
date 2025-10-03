@@ -35,6 +35,7 @@ st.set_page_config(
     page_title="契約容量最佳化計算工具",
     page_icon="⚡",
     initial_sidebar_state='expanded'
+    layout="wide"
 )
 
 # 關閉多餘警告
