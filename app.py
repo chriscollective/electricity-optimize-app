@@ -2,6 +2,10 @@
 契約容量最佳化計算工具
 """
 import streamlit as st
+
+# 臨時補丁：把舊 API 導到新 API
+if not hasattr(st, "experimental_get_query_params"):
+    st.experimental_get_query_params = lambda: st.query_params
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import os
