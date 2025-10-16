@@ -96,7 +96,11 @@ def render_sidebar():
     st.sidebar.write(
         "如果你覺得這個網站對你有幫助，歡迎透過以下LINE Pay QR code自由樂捐給站主，感謝你的支持！"
     )
-    st.sidebar.image("linepay_qrcode.JPG", width=200)
+    st.sidebar.image(
+        "linepay_qrcode.JPG",
+        width=200,
+        caption="LINE Pay QR Code－贊助 OptiPower"
+    )
     st.sidebar.markdown("---")
 
     # 聯繫與反饋

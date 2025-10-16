@@ -2,6 +2,7 @@
 契約容量最佳化計算工具
 ✨ 使用 st.form 優化,避免不必要的重新渲染
 """
+import json
 import streamlit as st
 from utils.sheet_tracker import log_visit, get_stats
 import matplotlib.font_manager as fm
@@ -9,7 +10,6 @@ import matplotlib.pyplot as plt
 import os
 import warnings
 from dotenv import load_dotenv
-import streamlit.components.v1 as components
 
 load_dotenv()
 
@@ -35,7 +35,6 @@ st.set_page_config(
     page_title="契約容量最佳化計算工具",
     page_icon="⚡",
     initial_sidebar_state='expanded'
-    
 )
 
 # 關閉多餘警告
@@ -68,6 +67,64 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+def inject_seo_metadata():
+    """將 SEO 相關的 meta、Open Graph 與結構化資料注入頁面"""
+    canonical_url = "https://optipower.streamlit.app/"
+    description = (
+        "OptiPower 契約容量最佳化計算工具，專為台灣低壓電力用戶打造，"
+        "只要輸入 12 個月最高需量即可評估最佳契約容量，降低浪費與罰款電費。"
+    )
+    keywords = (
+        "契約容量, 電費試算, 台電, 最高需量, 社區電費, 低壓電力, 電費最佳化, "
+        "電費節省, optipower"
+    )
+    seo_markup = f"""
+    <link rel="canonical" href="{canonical_url}">
+    <meta name="description" content="{description}">
+    <meta name="keywords" content="{keywords}">
+    <meta property="og:title" content="OptiPower 契約容量最佳化計算工具">
+    <meta property="og:description" content="{description}">
+    <meta property="og:url" content="{canonical_url}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_TW">
+    <meta property="og:image" content="{canonical_url}static/optipower-og.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="OptiPower 契約容量最佳化計算工具">
+    <meta property="twitter:description" content="{description}">
+    <meta property="twitter:image" content="{canonical_url}static/optipower-og.png">
+    """
+
+    schema_data = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "OptiPower 契約容量最佳化計算工具",
+        "url": canonical_url,
+        "description": description,
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "zh-Hant",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "TWD"
+        },
+        "publisher": {
+            "@type": "Person",
+            "name": "Chris Du"
+        },
+        "potentialAction": {
+            "@type": "Action",
+            "name": "計算最佳契約容量",
+            "target": canonical_url
+        }
+    }
+
+    st.markdown(seo_markup, unsafe_allow_html=True)
+    st.markdown(
+        f'<script type="application/ld+json">{json.dumps(schema_data, ensure_ascii=False)}</script>',
+        unsafe_allow_html=True
+    )
+
 
 def setup_matplotlib_font():
     """設定 Matplotlib 中文字體"""
@@ -88,9 +145,6 @@ def render_input_section():
     渲染輸入區塊
     ✨ 使用 st.form 包裝,只有提交時才重新渲染
     """
-    st.title("契約容量最佳化計算工具｜快速找出最省電費方案")
-    st.subheader("(非時間電價｜低壓電力)")
-
     # ✨ 使用 form 包裝所有輸入元件
     with st.form("calculation_form"):
         # 契約容量輸入
@@ -156,6 +210,50 @@ def render_input_section():
 
     # 未提交時返回 None
     return None, None, False
+
+
+def render_intro_section():
+    """顯示頁面主標題與重要使用說明"""
+    st.title("契約容量最佳化計算工具｜OptiPower")
+    st.subheader("專為台灣低壓電力用戶打造的免費電費最佳化試算")
+
+    st.markdown(
+        """
+        只要輸入近 12 個月的最高需量，OptiPower 就能即時計算出最省錢的契約容量，
+        並估算每年可節省的基本電費與潛在罰款。適合社區大樓管理委員會、企業管理部門，
+        以及所有想降低固定用電成本的用戶。
+        """
+    )
+
+    st.markdown("## 為什麼需要重新檢視契約容量？")
+    st.markdown(
+        """
+        - 契約容量設定過高，等同每月多繳固定電費。
+        - 夏月與非夏月用電差異大，容易在淡季造成資源浪費。
+        - 未預估到尖峰用電時的罰款，導致被動支出增加。
+        - 台電申請流程繁雜，缺乏透明的計算依據。
+        """
+    )
+
+    st.markdown("## OptiPower 能帶來的價值")
+    st.markdown(
+        """
+        - 即時呈現不同契約容量下的年費用比較。
+        - 自動比對浪費與罰款，快速找到最佳平衡點。
+        - 清楚的圖表與報表，協助向住戶或主管說明決策依據。
+        - 全中文介面，符合台灣電價制與低壓電力規範。
+        """
+    )
+
+    st.markdown("## 使用步驟")
+    st.markdown(
+        """
+        1. 準備電費帳單上過去 12 個月的最高需量（經常／尖峰）。
+        2. 在下方表單輸入目前契約容量與逐月需量。
+        3. 送出後，即可看到最佳方案、節省金額與視覺化圖表。
+        4. 評估後即可向台電提出調整申請，減少固定電費支出。
+        """
+    )
 
 
 def render_current_status(current_capacity, monthly_demands):
@@ -254,6 +352,30 @@ def render_chart(monthly_demands, optimal_capacity, optimal_fee):
     except Exception as e:
         st.error(f"❌ 圖表繪製錯誤: {e}")
 
+def render_faq_section():
+    """呈現常見問題與補充說明"""
+    st.markdown("## 常見問題（FAQ）")
+
+    with st.expander("Q1. OptiPower 支援哪些電價方案？"):
+        st.write(
+            "目前工具聚焦於台電的「低壓電力」且採用「非時間電價」的方案，"
+            "這類用戶通常包含中小企業、社區大樓與商辦空間。"
+            "若您使用的是高壓或時間電價方案，建議改用台電官方工具或諮詢能源顧問。"
+        )
+
+    with st.expander("Q2. 契約容量調整需要多少時間？"):
+        st.write(
+            "若由高調降至低，通常申請後一週內台電人員即可到場調整電表；"
+            "若未來可能擴增設備，建議保留安全餘裕，以免再度申請提高契約容量時耗費額外時間與手續費。"
+        )
+
+
+    with st.expander("Q3. 試算結果能否下載？"):
+        st.write(
+            "目前版本尚未支援匯出報表，建議以截圖或複製節省金額的方式分享。"
+            "如需新增 PDF／Excel 匯出功能，歡迎寫信至justakiss918@gmail.com提出需求。"
+        )
+
 
 def render_footer():
     """渲染頁尾"""
@@ -270,6 +392,9 @@ def main():
     # 設定字體
     setup_matplotlib_font()
 
+    # 注入 SEO 資訊 (需在版面主內容前)
+    inject_seo_metadata()
+
     # 記錄訪客 (可選,如果需要的話)
     if "initialized" not in st.session_state:
         log_visit()
@@ -277,6 +402,9 @@ def main():
 
     # 渲染側邊欄
     render_sidebar()
+
+    # 首屏靜態內容
+    render_intro_section()
 
     # ✨ 渲染輸入區塊 (使用 form,會返回提交狀態)
     current_capacity, monthly_demands, submitted = render_input_section()
@@ -299,6 +427,9 @@ def main():
 
         # 渲染圖表
         render_chart(monthly_demands, optimal_capacity, optimal_fee)
+
+    # FAQ 與補充說明
+    render_faq_section()
 
     # 渲染頁尾
     render_footer()
