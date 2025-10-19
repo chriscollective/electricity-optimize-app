@@ -109,47 +109,54 @@ st.markdown(
 )
 
 # ✨ 在行動裝置寬度下，自動收合側欄，避免初次載入時遮擋主內容。
-#   透過注入前端腳本等待 Streamlit 的側欄元素渲染完成後，
-#   若寬度 <= 786px 且側欄仍開啟，程式化點擊內建的收合按鈕一次。
-#   同時在桌面寬度時重置旗標，確保切回桌面能保留原本行為。
+#   做法：透過前端腳本等待 Streamlit 側欄節點與收合按鈕生成，
+#   若畫面寬度 <= 786px 且側欄仍展開，就自動觸發一次收合。
+#   另監聽視窗尺寸變化，在桌面寬度時重置狀態，保留桌機使用者習慣。
 st.markdown(
     """
     <script>
     (function() {
         const threshold = 786;
+        const parentDocument = window.parent?.document || document;
 
-        const setupAutoCollapse = () => {
-            const parentDocument = window.parent?.document || document;
+        const collapseIfNeeded = () => {
             const sidebar = parentDocument.querySelector('[data-testid="stSidebar"]');
             const toggleButton = parentDocument.querySelector('[data-testid="collapsedControl"] button');
-
             if (!sidebar || !toggleButton) {
-                window.setTimeout(setupAutoCollapse, 150);
-                return;
+                return false;
             }
 
-            const collapseSidebarOnMobile = () => {
-                const isMobile = window.innerWidth <= threshold;
-                const isExpanded = sidebar.getAttribute('aria-expanded') === 'true';
+            const isMobile = window.innerWidth <= threshold;
+            const isExpanded = sidebar.getAttribute('aria-expanded') === 'true';
 
-                if (isMobile) {
-                    if (!window.__sidebarAutoCollapsed && isExpanded) {
-                        toggleButton.click();
-                        window.__sidebarAutoCollapsed = true;
+            if (isMobile && isExpanded && !window.__sidebarAutoCollapsed) {
+                toggleButton.click();
+                window.__sidebarAutoCollapsed = true;
+            } else if (!isMobile) {
+                window.__sidebarAutoCollapsed = false;
+            }
+            return true;
+        };
+
+        const initializeWatcher = () => {
+            if (!collapseIfNeeded()) {
+                const observer = new MutationObserver(() => {
+                    if (collapseIfNeeded()) {
+                        observer.disconnect();
+                        window.addEventListener('resize', collapseIfNeeded, { passive: true });
                     }
-                } else {
-                    window.__sidebarAutoCollapsed = false;
-                }
-            };
+                });
 
-            collapseSidebarOnMobile();
-            window.addEventListener('resize', collapseSidebarOnMobile);
+                observer.observe(parentDocument.body, { childList: true, subtree: true });
+            } else {
+                window.addEventListener('resize', collapseIfNeeded, { passive: true });
+            }
         };
 
         if (document.readyState === 'complete') {
-            setupAutoCollapse();
+            initializeWatcher();
         } else {
-            window.addEventListener('load', setupAutoCollapse);
+            window.addEventListener('load', initializeWatcher, { once: true });
         }
     })();
     </script>
