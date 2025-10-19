@@ -81,7 +81,12 @@ st.markdown(
             position: fixed;
             left: 1rem;
             top: 1rem;
-            z-index: 120;
+            z-index: 300;
+            pointer-events: auto;
+        }
+
+        [data-testid="collapsedControl"] button {
+            pointer-events: auto;
         }
 
         [data-testid="stAppViewContainer"] {
@@ -262,7 +267,7 @@ def render_intro_section():
     st.markdown(
         """
         只要輸入近 12 個月的最高需量，OptiPower 就能即時計算出最省錢的契約容量，
-        並估算每年可節省的基本電費與潛在罰款。適合社區大樓管理委員會、企業管理部門，
+        並估算每年可節省的基本電費與潛在罰款。適合社區大樓管理委員會，
         以及所有想降低固定用電成本的用戶。
         """
     )
