@@ -371,13 +371,18 @@ def render_optimization_results(monthly_demands, current_fee):
         # 使用 HTML 和 CSS 為最佳容量加上鮮明背景色
         st.markdown(
             f"""
-            <h2 style='background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
-                       color: white;
-                       padding: 20px;
-                       border-radius: 10px;
+            <h2 style='color: #000;
+                       font-weight: 700;
                        text-align: center;
-                       box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
-                🔥 最佳契約容量建議：<span style='font-size: 1.3em; font-weight: bold;'>{optimal_capacity} 千瓦</span>
+                       padding: 12px 0;'>
+                🔥 最佳契約容量建議：
+                <span style='font-size: 1.3em; font-weight: 700; color: #D00000;
+                             text-decoration: underline;
+                             text-decoration-color: #000;
+                             text-decoration-thickness: 3px;
+                             text-decoration-skip-ink: none;'>
+                    {optimal_capacity} 千瓦
+                </span>
             </h2>
             """,
             unsafe_allow_html=True
@@ -395,23 +400,32 @@ def render_optimization_results(monthly_demands, current_fee):
 
         st.markdown(
             f"### 💰 優化後一年可節省金額："
-            f"<span style='background: linear-gradient(90deg, #FFE066, #FFC107);"
-            f"color: #593200; padding: 0.15em 0.4em; border-radius: 6px;"
-            f"font-weight: 700;'>{saved_fee:.2f} 元</span>",
+            f"<span style='font-weight: 700; color: #D00000;"
+            f"text-decoration: underline;"
+            f"text-decoration-color: #000;"
+            f"text-decoration-thickness: 3px;"
+            f"text-decoration-skip-ink: none;'>"
+            f"{saved_fee:.2f} 元</span>",
             unsafe_allow_html=True
         )
         st.markdown(
             f"### 📆 平均每個月可節省金額："
-            f"<span style='background: linear-gradient(90deg, #66DE93, #1CC88A);"
-            f"color: #083D2A; padding: 0.15em 0.4em; border-radius: 6px;"
-            f"font-weight: 700;'>{monthly_saved_fee:.2f} 元</span>",
+            f"<span style='font-weight: 700; color: #D00000;"
+            f"text-decoration: underline;"
+            f"text-decoration-color: #000;"
+            f"text-decoration-thickness: 3px;"
+            f"text-decoration-skip-ink: none;'>"
+            f"{monthly_saved_fee:.2f} 元</span>",
             unsafe_allow_html=True
         )
         st.markdown(
             f"### 📉 優化後可節省"
-            f"<span style='background: linear-gradient(90deg, #6EC5FF, #4A90E2);"
-            f"color: #0A2E5C; padding: 0.15em 0.4em; border-radius: 6px;"
-            f"font-weight: 700;'>{saved_percentage:.1f}%</span>"
+            f"<span style='font-weight: 700; color: #D00000;"
+            f"text-decoration: underline;"
+            f"text-decoration-color: #000;"
+            f"text-decoration-thickness: 3px;"
+            f"text-decoration-skip-ink: none;'>"
+            f"{saved_percentage:.1f}%</span>"
             f" 的基本電費",
             unsafe_allow_html=True
         )
