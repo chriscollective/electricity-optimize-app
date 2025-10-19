@@ -109,37 +109,48 @@ st.markdown(
 )
 
 # ✨ 在行動裝置寬度下，自動收合側欄，避免初次載入時遮擋主內容。
-#   透過注入簡單的前端腳本偵測視窗寬度，若 <= 786px 且側欄仍開啟，
-#   便程式化點擊 Streamlit 內建的收合按鈕一次。
+#   透過注入前端腳本等待 Streamlit 的側欄元素渲染完成後，
+#   若寬度 <= 786px 且側欄仍開啟，程式化點擊內建的收合按鈕一次。
 #   同時在桌面寬度時重置旗標，確保切回桌面能保留原本行為。
 st.markdown(
     """
     <script>
     (function() {
         const threshold = 786;
-        const collapseSidebarOnMobile = () => {
-            const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
-            const toggleButton = window.parent.document.querySelector('[data-testid="collapsedControl"] button');
+
+        const setupAutoCollapse = () => {
+            const parentDocument = window.parent?.document || document;
+            const sidebar = parentDocument.querySelector('[data-testid="stSidebar"]');
+            const toggleButton = parentDocument.querySelector('[data-testid="collapsedControl"] button');
+
             if (!sidebar || !toggleButton) {
+                window.setTimeout(setupAutoCollapse, 150);
                 return;
             }
 
-            const isMobile = window.innerWidth <= threshold;
-            const isExpanded = sidebar.getAttribute('aria-expanded') === 'true';
+            const collapseSidebarOnMobile = () => {
+                const isMobile = window.innerWidth <= threshold;
+                const isExpanded = sidebar.getAttribute('aria-expanded') === 'true';
 
-            if (isMobile) {
-                if (!window.__sidebarAutoCollapsed && isExpanded) {
-                    toggleButton.click();
-                    window.__sidebarAutoCollapsed = true;
+                if (isMobile) {
+                    if (!window.__sidebarAutoCollapsed && isExpanded) {
+                        toggleButton.click();
+                        window.__sidebarAutoCollapsed = true;
+                    }
+                } else {
+                    window.__sidebarAutoCollapsed = false;
                 }
-            } else {
-                window.__sidebarAutoCollapsed = false;
-            }
+            };
+
+            collapseSidebarOnMobile();
+            window.addEventListener('resize', collapseSidebarOnMobile);
         };
 
-        window.addEventListener('load', collapseSidebarOnMobile);
-        window.addEventListener('resize', collapseSidebarOnMobile);
-        setTimeout(collapseSidebarOnMobile, 300);
+        if (document.readyState === 'complete') {
+            setupAutoCollapse();
+        } else {
+            window.addEventListener('load', setupAutoCollapse);
+        }
     })();
     </script>
     """,
