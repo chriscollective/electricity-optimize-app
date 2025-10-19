@@ -55,6 +55,84 @@ st.markdown(
         width: 1000px;
     }
 
+    @media (max-width: 1200px) {
+        [data-testid="stSidebar"] {
+            width: 420px;
+            min-width: 360px;
+            max-width: 520px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        [data-testid="stSidebar"] {
+            width: 340px;
+            min-width: 320px;
+            max-width: 420px;
+        }
+    }
+
+    @media (max-width: 786px) {
+        [data-testid="stSidebar"] {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: min(85vw, 320px);
+            max-width: min(85vw, 320px);
+            min-width: 0;
+            padding-top: 1rem;
+            padding-bottom: 2rem;
+            overflow-y: auto;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+            background: white;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        [data-testid="stSidebar"][aria-expanded="true"] {
+            transform: translateX(0);
+        }
+
+        [data-testid="stSidebar"][aria-expanded="false"] {
+            transform: translateX(-100%);
+        }
+
+        [data-testid="collapsedControl"] {
+            position: fixed;
+            left: 1rem;
+            top: 1rem;
+            z-index: 101;
+        }
+
+        [data-testid="stAppViewContainer"] {
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        .block-container {
+            max-width: 100%;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .stHorizontalBlock > div[data-testid="column"] {
+            flex: 1 1 50% !important;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .stHorizontalBlock > div[data-testid="column"] {
+            flex: 1 1 100% !important;
+        }
+
+        .block-container {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+    }
+
      /* ✨ 新增:隱藏 form 的邊框 */
     [data-testid="stForm"] {
         border: 0px;
@@ -160,19 +238,25 @@ def render_input_section():
         st.caption("通常在電費帳單➞最高需量(千瓦)➞經常(尖峰)需量")
 
         monthly_demands = []
-        cols = st.columns(4)
+        months_per_row = 4
+        rows = (12 + months_per_row - 1) // months_per_row
 
-        for i in range(12):
-            with cols[i % 4]:
-                default_value = max(1, int(current_capacity * 0.8))
-                demand = st.number_input(
-                    f"{i+1}月",
-                    min_value=1,
-                    value=default_value,
-                    key=f"month_{i}",
-                    help=f"{i+1}月的最高需量"
-                )
-                monthly_demands.append(demand)
+        for row in range(rows):
+            cols = st.columns(months_per_row)
+            for col_idx in range(months_per_row):
+                month_index = row * months_per_row + col_idx
+                if month_index >= 12:
+                    break
+                with cols[col_idx]:
+                    default_value = max(1, int(current_capacity * 0.8))
+                    demand = st.number_input(
+                        f"{month_index + 1}月",
+                        min_value=1,
+                        value=default_value,
+                        key=f"month_{month_index}",
+                        help=f"{month_index + 1}月的最高需量"
+                    )
+                    monthly_demands.append(demand)
 
         # ✨ 提交按鈕必須在 form 內部
         st.write("---")
@@ -307,9 +391,30 @@ def render_optimization_results(monthly_demands, current_fee):
         # 計算節省金額
         saved_fee = current_fee - optimal_fee
         monthly_saved_fee = saved_fee / 12
+        saved_percentage = (saved_fee / current_fee * 100) if current_fee else 0
 
-        st.write(f"### 💰 優化後一年可節省金額：{saved_fee:.2f} 元")
-        st.write(f"### 📆 平均每個月可節省金額：{monthly_saved_fee:.2f} 元")
+        st.markdown(
+            f"### 💰 優化後一年可節省金額："
+            f"<span style='background: linear-gradient(90deg, #FFE066, #FFC107);"
+            f"color: #593200; padding: 0.15em 0.4em; border-radius: 6px;"
+            f"font-weight: 700;'>{saved_fee:.2f} 元</span>",
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            f"### 📆 平均每個月可節省金額："
+            f"<span style='background: linear-gradient(90deg, #66DE93, #1CC88A);"
+            f"color: #083D2A; padding: 0.15em 0.4em; border-radius: 6px;"
+            f"font-weight: 700;'>{monthly_saved_fee:.2f} 元</span>",
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            f"### 📉 優化後可節省"
+            f"<span style='background: linear-gradient(90deg, #6EC5FF, #4A90E2);"
+            f"color: #0A2E5C; padding: 0.15em 0.4em; border-radius: 6px;"
+            f"font-weight: 700;'>{saved_percentage:.1f}%</span>"
+            f" 的基本電費",
+            unsafe_allow_html=True
+        )
 
         return optimal_capacity, optimal_fee
 

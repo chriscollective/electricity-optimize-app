@@ -62,11 +62,20 @@
 
 ---
 
+## 快速開始
 
-## 部署與 SEO 提示
-- **自訂網域**：建議透過 Streamlit Community Cloud 的自訂網域功能，綁定 `https://optipower.streamlit.app/` 或其他品牌化網址以建立搜尋信任。
-- **15 分鐘休眠機制**：Streamlit 免費方案在 15 分鐘無人使用時會休眠，搜尋爬蟲或新訪客進入會自動喚醒；若需常駐執行，可設定外部定時喚醒排程或升級付費方案。
-- **結構化資料與描述**：`app.py` 已注入 `meta` 描述、Open Graph、Twitter 卡片與 JSON-LD 結構化資料，協助搜尋引擎理解網站內容。
-- **內容策略**：定期更新 FAQ、案例分享與教學文章，並在社群或社區公告中分享連結，有助提升自然搜尋排名。
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+## 資料需求
+
+1. 目前契約容量（經常／尖峰契約）。
+2. 過去 12 個月的最高需量資料。
+
+
+
+
 
 
