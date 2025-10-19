@@ -55,36 +55,15 @@ st.markdown(
         width: 1000px;
     }
 
-    @media (max-width: 1200px) {
-        [data-testid="stSidebar"] {
-            width: 420px;
-            min-width: 360px;
-            max-width: 520px;
-        }
-    }
-
-    @media (max-width: 992px) {
-        [data-testid="stSidebar"] {
-            width: 340px;
-            min-width: 320px;
-            max-width: 420px;
-        }
-    }
-
     @media (max-width: 786px) {
         [data-testid="stSidebar"] {
             position: fixed;
             top: 0;
             bottom: 0;
             left: 0;
-            width: min(85vw, 320px);
-            max-width: min(85vw, 320px);
+            width: min(90vw, 360px);
+            max-width: min(90vw, 360px);
             min-width: 0;
-            padding-top: 1rem;
-            padding-bottom: 2rem;
-            overflow-y: auto;
-            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
-            background: white;
             transform: translateX(-100%);
             transition: transform 0.3s ease;
             z-index: 100;
@@ -95,41 +74,20 @@ st.markdown(
         }
 
         [data-testid="stSidebar"][aria-expanded="false"] {
-            transform: translateX(-100%);
+            transform: translateX(-105%);
         }
 
         [data-testid="collapsedControl"] {
             position: fixed;
             left: 1rem;
             top: 1rem;
-            z-index: 101;
+            z-index: 120;
         }
 
         [data-testid="stAppViewContainer"] {
             margin-left: 0 !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
-        }
-
-        .block-container {
-            max-width: 100%;
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-
-        .stHorizontalBlock > div[data-testid="column"] {
-            flex: 1 1 50% !important;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .stHorizontalBlock > div[data-testid="column"] {
-            flex: 1 1 100% !important;
-        }
-
-        .block-container {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
         }
     }
 
@@ -490,9 +448,11 @@ def render_faq_section():
 
 
     with st.expander("Q3. 試算結果能否下載？"):
-        st.write(
-            "目前版本尚未支援匯出報表，建議以截圖或複製節省金額的方式分享。"
-            "如需新增 PDF／Excel 匯出功能，歡迎寫信至justakiss918@gmail.com提出需求。"
+        st.markdown(
+            "1. 請先將左側說明欄位縮起。  \n"
+            "2. 點選右上角 3 個點的選單，點取 Print。  \n"
+            "3. 點選列印後，就會跳出存檔畫面。  \n"
+            "4. 輸入檔案名稱，按下存檔，就可以下載 PDF 檔了。"
         )
 
 
