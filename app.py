@@ -34,7 +34,7 @@ from components.sidebar import render_sidebar
 st.set_page_config(
     page_title="契約容量最佳化計算工具",
     page_icon="⚡",
-    initial_sidebar_state='expanded'
+    initial_sidebar_state='collapsed'
 )
 
 # 關閉多餘警告
@@ -108,10 +108,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ✨ 在行動裝置寬度下，自動收合側欄，避免初次載入時遮擋主內容。
-#   做法：透過前端腳本等待 Streamlit 側欄節點與收合按鈕生成，
-#   若畫面寬度 <= 786px 且側欄仍展開，就自動觸發一次收合。
-#   另監聽視窗尺寸變化，在桌面寬度時重置狀態，保留桌機使用者習慣。
+# ✨ 根據裝置寬度自動設定側欄狀態：
+#   - 預設將 `initial_sidebar_state` 設為 collapsed，避免手機初次載入被側欄遮住。
+#   - 透過腳本監測螢幕寬度：桌面 (>786px) 自動展開、行動裝置 (<=786px) 維持收合。
+#   - 使用 MutationObserver 等待 Streamlit 完成 DOM 建立，再程式化點擊切換按鈕。
 st.markdown(
     """
     <script>
@@ -119,7 +119,7 @@ st.markdown(
         const threshold = 786;
         const parentDocument = window.parent?.document || document;
 
-        const collapseIfNeeded = () => {
+        const ensureSidebarState = () => {
             const sidebar = parentDocument.querySelector('[data-testid="stSidebar"]');
             const toggleButton = parentDocument.querySelector('[data-testid="collapsedControl"] button');
             if (!sidebar || !toggleButton) {
@@ -129,27 +129,43 @@ st.markdown(
             const isMobile = window.innerWidth <= threshold;
             const isExpanded = sidebar.getAttribute('aria-expanded') === 'true';
 
-            if (isMobile && isExpanded && !window.__sidebarAutoCollapsed) {
+            const shouldExpand = !isMobile;
+
+            if (shouldExpand !== isExpanded) {
                 toggleButton.click();
-                window.__sidebarAutoCollapsed = true;
-            } else if (!isMobile) {
-                window.__sidebarAutoCollapsed = false;
             }
             return true;
         };
 
+        const bindResizeHandler = () => {
+            window.addEventListener('resize', () => {
+                const sidebar = parentDocument.querySelector('[data-testid="stSidebar"]');
+                const toggleButton = parentDocument.querySelector('[data-testid="collapsedControl"] button');
+                if (!sidebar || !toggleButton) {
+                    return;
+                }
+                const isMobile = window.innerWidth <= threshold;
+                const isExpanded = sidebar.getAttribute('aria-expanded') === 'true';
+                const shouldExpand = !isMobile;
+
+                if (shouldExpand !== isExpanded) {
+                    toggleButton.click();
+                }
+            }, { passive: true });
+        };
+
         const initializeWatcher = () => {
-            if (!collapseIfNeeded()) {
+            if (!ensureSidebarState()) {
                 const observer = new MutationObserver(() => {
-                    if (collapseIfNeeded()) {
+                    if (ensureSidebarState()) {
                         observer.disconnect();
-                        window.addEventListener('resize', collapseIfNeeded, { passive: true });
+                        bindResizeHandler();
                     }
                 });
 
                 observer.observe(parentDocument.body, { childList: true, subtree: true });
             } else {
-                window.addEventListener('resize', collapseIfNeeded, { passive: true });
+                bindResizeHandler();
             }
         };
 
